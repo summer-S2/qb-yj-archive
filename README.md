@@ -36,6 +36,6 @@ qb-yj-archive/
 
 1. `better/CHECKLIST.md` 열고 체크리스트 확인
 2. `#이슈번호/` 폴더 생성
-3. `templates/spec.md` 참고해서 `spec.md` 작성
-4. `templates/plan.md` 참고해서 `plan.md` 작성
+3. `templates/spec.md` 형식 참고해서 `spec.md` 작성
+4. `templates/plan.md` 형식 + 해당 이슈의 `spec.md` 내용 참고해서 `plan.md` 작성
 5. Claude에게 코드 작업 요청
