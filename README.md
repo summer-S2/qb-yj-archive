@@ -15,11 +15,11 @@ qb-yj-archive/
 │   ├── @ME.md         # 개인 설정 (응답 규칙, 코드 컨벤션 등)
 │   ├── CHECKLIST.md   # 이슈 작업 가이드 (체크리스트, 패턴 모음)
 │   ├── templates/
-│   │   ├── spec.md    # 기획 문서 템플릿
-│   │   └── plan.md    # 구현 계획 템플릿
+│   │   ├── SPEC.md    # 기획 문서 템플릿
+│   │   └── PLAN.md    # 구현 계획 템플릿
 │   └── #이슈번호/
-│       ├── spec.md    # 이슈별 기획 문서
-│       └── plan.md    # 이슈별 구현 계획
+│       ├── SPEC.md    # 이슈별 기획 문서
+│       └── PLAN.md    # 이슈별 구현 계획
 └── fa/                # better-wealth-fa 관련 문서 (추가 예정)
 ```
 
@@ -36,6 +36,6 @@ qb-yj-archive/
 
 1. `better/CHECKLIST.md` 열고 체크리스트 확인
 2. `#이슈번호/` 폴더 생성
-3. `templates/spec.md` 형식 참고해서 `spec.md` 작성
-4. `templates/plan.md` 형식 + 해당 이슈의 `spec.md` 내용 참고해서 `plan.md` 작성
+3. `templates/SPEC.md` 형식 참고해서 `SPEC.md` 작성
+4. `templates/PLAN.md` 형식 + 해당 이슈의 `SPEC.md` 내용 참고해서 `PLAN.md` 작성
 5. Claude에게 코드 작업 요청

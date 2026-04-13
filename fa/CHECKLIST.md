@@ -9,7 +9,7 @@
 | 기준 | 위치 |
 |------|------|
 | 다른 이슈에도 반드시 적용되어야 하는 전체 규칙 | `CHECKLIST.md` 또는 `CLAUDE.md` |
-| 이번 이슈에만 국한된 결정 / 구현 방식 | `#이슈번호/plan.md` 내부 |
+| 이번 이슈에만 국한된 결정 / 구현 방식 | `#이슈번호/PLAN.md` 내부 |
 
 > 이슈 작업 중 발견한 패턴이 **프로젝트 전체에 적용되어야 한다면** 이슈 폴더가 아닌 `CHECKLIST.md`에 작성하고, 이슈 폴더 내 중복 내용은 제거한다.
 
@@ -18,12 +18,12 @@
 ## 새 이슈 시작 전 체크리스트
 
 - [ ] `#이슈번호/` 폴더 생성했는가?
-- [ ] spec.md에 **영향받는 서비스** (`@fa-be` / `@betterapp` / `@qbis`) 명시했는가?
-- [ ] spec.md에 **API 호출 경로** (직접 vs BetterApp 경유) 명시했는가?
-- [ ] spec.md에 **미확정 항목** 명시했는가?
-- [ ] plan.md에 **Guard 종류** 명시했는가?
-- [ ] plan.md에 **삭제되는 파일** 명시했는가?
-- [ ] plan.md에 **API 연동 대기 항목** 표로 정리했는가?
+- [ ] SPEC.md에 **영향받는 서비스** (`@fa-be` / `@betterapp` / `@qbis`) 명시했는가?
+- [ ] SPEC.md에 **API 호출 경로** (직접 vs BetterApp 경유) 명시했는가?
+- [ ] SPEC.md에 **미확정 항목** 명시했는가?
+- [ ] PLAN.md에 **Guard 종류** 명시했는가?
+- [ ] PLAN.md에 **삭제되는 파일** 명시했는가?
+- [ ] PLAN.md에 **API 연동 대기 항목** 표로 정리했는가?
 - [ ] 문서 수정 시 **변경 이력** 기록했는가?
 
 ---
@@ -31,24 +31,24 @@
 ## 문서 작성 순서
 
 ```
-1. spec.md 작성 (기획 확정)
+1. SPEC.md 작성 (기획 확정)
       ↓ Claude에게 검토 요청 + 미확정 항목 논의
-2. plan.md 작성 (구현 방법 결정)
+2. PLAN.md 작성 (구현 방법 결정)
       ↓ Claude에게 검토 요청 + 방향 합의
 3. 코드 작업
       ↓ 기획/구현 변경 발생 시
-4. spec.md 먼저 수정 → plan.md 수정 → 코드 수정 순서 유지
+4. SPEC.md 먼저 수정 → PLAN.md 수정 → 코드 수정 순서 유지
 ```
 
 ---
 
 ## Claude 요청 방법
 
-### spec.md 작성 요청
+### SPEC.md 작성 요청
 
 ```
 #이슈번호 작업 시작할게.
-#이슈번호/spec.md 작성해줘.
+#이슈번호/SPEC.md 작성해줘.
 
 [기능 설명]
 - 기능 목적: ...
@@ -58,11 +58,11 @@
 - 미확정 항목: ...
 ```
 
-### plan.md 작성 요청
+### PLAN.md 작성 요청
 
 ```
-spec.md 검토 완료됐어.
-#이슈번호/plan.md 작성해줘.
+SPEC.md 검토 완료됐어.
+#이슈번호/PLAN.md 작성해줘.
 
 고려해줘야 할 것들:
 - Guard 종류: [JwtAuthGuard / AllianceJwtAuthGuard / AllianceSignatureAuthGuard]
@@ -73,9 +73,9 @@ spec.md 검토 완료됐어.
 ### 코드 작업 요청
 
 ```
-spec.md랑 plan.md 기반으로 코드 작업 시작해줘.
-#이슈번호/spec.md
-#이슈번호/plan.md
+SPEC.md랑 PLAN.md 기반으로 코드 작업 시작해줘.
+#이슈번호/SPEC.md
+#이슈번호/PLAN.md
 
 프론트 작업이면 apps/fe-react-app 하위에서 작업해줘.
 ```
