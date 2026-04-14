@@ -107,7 +107,7 @@ interface ContractListItem {
 | 계약유형 | `contract.contractTypeName` |
 | 포트폴리오 | `contract.portfolioName` |
 | 계약시작일 | `contract.contractDate` |
-| 계약만료일 | `contract.contractEndDate` |
+| 계약만료일(남은일수) | `contract.contractEndDate` + D-day 계산 |
 | 계약기간 | `contract.contractPeriod` |
 | 운용계좌 | `contract.actNo` |
 | 수수료 유형 | `contract.feeTypeName` |
@@ -137,7 +137,33 @@ interface ContractListItem {
 
 > 일임 계약에서 '승인 대기 중' → '매매 대기 중'으로 오버라이드
 
-배지 색상: '운용 중' → green, 나머지 → yellow (ContractItem.tsx 패턴)
+배지 색상: gray 톤 통일 (`color="default"`)
+
+---
+
+## 계약만료일 표시
+
+- 헤더: `계약만료일(남은일수)`
+- 만료 전: `YYYY-MM-DD (NNN일)` — 남은 일수
+- 만료 후: `YYYY-MM-DD (만료)` — 해지 완료 전까지만 노출
+- 30일 이하: 일 단위 표시 (예: `1일`, `28일`), 빨강(`text-red-default`)
+- 30일 초과 ~ 1년 미만: 개월 단위 표시 (예: `2개월`, `11개월`), 회색(`text-gray-500`)
+- 1년 이상: 년+개월 표시 (예: `1년`, `1년 3개월`), 회색(`text-gray-500`)
+- 개월 계산은 `dayjs.diff(today, 'month')` 달력 기준 (완전한 월만 카운트, 미만은 버림)
+- 유틸 함수: `formatRemainingPeriod(endDate)` (`src/utils/formatters.ts`)
+
+> '만료' 표시 노출 시점: 계약 만료일 도래 후 해지 완료 처리 전까지만.
+> 해지 완료(2290) 시 목록에서 미노출. 해지 처리 소요: KBS D+4, SSI/KIS D+1~D+3 (`bw-is/해지.md` 참고)
+
+---
+
+## 빈 화면 처리
+
+데이터가 없을 때 테이블 대신 `EmptyView` 컴포넌트 표시.
+
+- 21개 컬럼 테이블은 가로 스크롤 필요 → 테이블 내부 emptyView는 스크롤해야 보임
+- `data.length === 0`일 때 DataTable 자체를 렌더링하지 않고 EmptyView로 대체
+- EmptyView 참고: `src/components/ui/EmptyView`
 
 ---
 
@@ -160,3 +186,4 @@ interface ContractListItem {
 | 날짜 | 변경 내용 | 관련 파일 |
 |------|-----------|-----------|
 | 2026-04-13 | 최초 작성 | 전체 |
+| 2026-04-14 | 계약만료일 헤더/표시 변경, 빈 화면 처리 추가, 배지 gray 통일 반영 | CustomersContracts.tsx |
