@@ -45,7 +45,20 @@
 | 파일 | 변경 내용 |
 |------|-----------|
 | `src/features/customer/contracts/CustomersContracts.tsx` | 계약목록 테이블 구현 (목데이터 포함, API 연동 시 제거) |
-| `src/utils/formatters.ts` | `formatRemainingPeriod(endDate)` 함수 추가 |
+| `src/features/investment/investment-propose/QbPropose/Board/ContractItem.tsx` | 수익금액/수익률 표시 정책 적용, 계약만료일 포맷 통일, 공통 포맷 함수로 교체 |
+| `src/utils/formatters.ts` | 아래 함수 추가 |
+
+### formatters.ts 추가 함수
+
+| 함수 | 설명 | 유사 기존 함수 |
+|------|------|--------------|
+| `formatRemainingPeriod(endDate)` | 계약만료일 남은기간 (일/개월/년+개월) | 없음 |
+| `formatContractDate(value)` | YYYYMMDD → YYYY-MM-DD, 빈값 `-` | `dateFormatter` — 유사하나 빈값 시 `''` 반환으로 다름 |
+| `formatEvalDateTime(value)` | YYYYMMDDHHmmss → YYYY-MM-DD HH:mm:ss, 빈값 `-` | 없음 |
+| `formatContractAmount(value)` | Math.ceil + 콤마 (계약 금액용) | 없음 |
+| `formatProfitRate(value)` | 소수 → 퍼센트 문자열 소수점 2자리 | 없음 |
+
+> ⚠️ formatters.ts에 함수 추가 시 유사 기존 함수 먼저 확인. 빈값 처리(빈 문자열 vs `-`)가 다르면 별도 함수로 분리.
 
 ---
 
@@ -156,7 +169,10 @@ interface ContractListItem {
 
 > 일임 계약에서 '승인 대기 중' → '매매 대기 중'으로 오버라이드
 
-배지 색상: 운용(2110/2210) → `green`, 그 외 → `yellow`
+배지 색상: `getStatusLabel(contract) === '운용 중'` → `green`, 그 외 → `yellow`
+
+> `getQbContractStatus`는 2210이더라도 orderStatus 플래그(approveFlag/processFlag)에 따라
+> '승인 대기 중' / '매매 대기 중' / '운용 중'을 다르게 반환하므로, 코드가 아닌 라벨로 판단.
 
 ---
 
