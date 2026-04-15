@@ -19,6 +19,11 @@
 | 페이지 (`src/pages/dashboard/contracts/ContractsPage.tsx`) | 완료 |
 | GNB 메뉴 "계약관리" (`src/config/gnb.ts`) | 완료 |
 | 라우트 엘리먼트 (`src/routes/elements.tsx`) | 완료 |
+| 계약목록 테이블 (목데이터) | 완료 |
+| 배지 색상: 운용 green / 그 외 yellow | 완료 |
+| 계약만료일 남은기간 포맷 (`formatRemainingPeriod`) | 완료 |
+| 빈 화면 EmptyView 처리 | 완료 |
+| API 응답 스펙 적용 | 완료 |
 
 ---
 
@@ -28,11 +33,10 @@
 |------|------|
 | 테이블 컴포넌트 | `src/components/ui/DataTable/index.tsx` (TanStack React Table v8) |
 | 페이지 패턴 참고 | `src/features/customer/CustomerList.tsx` (고객목록) |
-| 구현 대상 | `src/features/customer/contracts/CustomersContracts.tsx` (현재 stub) |
-| 계약 타입 정의 | `packages/shared-consts/src/types/quarterback/contract.ts` |
-| 상태 표시 함수 | `getQbContractStatus` (같은 파일) |
-| 계약 컴포넌트 참고 | `src/features/investment/investment-propose/QbPropose/Board/PortfolioContractTab.tsx` |
-| 상태 라벨 로직 참고 | `src/features/investment/investment-propose/QbPropose/Board/ContractItem.tsx` |
+| 구현 파일 | `src/features/customer/contracts/CustomersContracts.tsx` |
+| 상태 표시 함수 | `QbContract.getQbContractStatus` (`packages/shared-consts`) |
+| 계좌유형 변환 | `QbContract.getAccountTypeName` (`packages/shared-consts`) |
+| 남은기간 포맷 | `formatRemainingPeriod` (`src/utils/formatters.ts`) |
 
 ---
 
@@ -40,74 +44,101 @@
 
 | 파일 | 변경 내용 |
 |------|-----------|
-| `src/features/customer/contracts/CustomersContracts.tsx` | stub → 계약목록 테이블 구현 (목데이터 컴포넌트 하단에 포함, API 연동 시 제거) |
+| `src/features/customer/contracts/CustomersContracts.tsx` | 계약목록 테이블 구현 (목데이터 포함, API 연동 시 제거) |
+| `src/utils/formatters.ts` | `formatRemainingPeriod(endDate)` 함수 추가 |
 
 ---
 
-## 데이터 구조
+## API 응답 구조
 
-API 미완성 → 목데이터로 작업. 기존 `QbContract.ContractInfo` 래퍼 타입 사용.
+백엔드 API 응답 스펙 확정. 컴포넌트 내 `ContractListItem` 인터페이스로 정의.
 
 ```typescript
-// 계약목록 행 타입 — API 나오면 응답 타입으로 교체
 interface ContractListItem {
-  customerName: string;
-  customerId: number;
-  contractInfo: QbContract.ContractInfo;
-}
-```
-
-### QbContract.ContractInfo 구조 (참고)
-
-```typescript
-{
-  evaluation: {
-    navAmount: number;          // 평가금액
-    profitAmount: number;       // 수익금액
-    profitRate: number;         // 수익률 (소수, 0.02 = 2%)
-    principalAmount: number;    // 투자원금
-    evalDttm: string;           // 평가일시 (YYYYMMDDhhmmss)
-  }
+  betterId: number;              // Better 고객 ID
+  customer: {
+    id: number;                  // FA 고객 ID
+    userName: string;            // 고객 이름
+  };
   contract: {
-    ctrNo: string;              // 계약번호
-    contractStatus: string;     // 상태코드
-    contractStatusName: string; // 상태명
-    contractTypeName: string;   // 계약유형 (자문/일임)
-    contractDate: string;       // 계약시작일 (YYYYMMDD)
-    contractPeriod: string;     // 계약기간
-    contractEndDate: string;    // 계약만료일 (YYYYMMDD)
-    securityName: string;       // 증권사
-    accountType: AccountType;   // 계좌유형 (IRP/ISA/PSA/BA)
-    actNo: string;              // 운용계좌
-    feeTypeName: string;        // 수수료유형 (정률형/성과형)
-    feeRate: string;            // 수수료율
-    feeTypePeriod: string;      // 수수료 출금 주기
-    feeWithdrawalDate: string;  // 수수료 출금 예정일
-    portfolioName: string;      // 포트폴리오명
-    withdrawalAccountNumber: string;   // 수수료 출금 계좌
-    withdrawalAccountTypeName: string; // 수수료 출금 기관
-  }
-  orderStatus: OrderStatus | null;
+    ctrNo: string;               // 계약번호
+    actNo: string;               // 계좌관리번호
+    contractType: string;        // 계약유형 코드
+    contractTypeName: string;    // "자문" | "일임"
+    progressStateCode: string;   // 계약 진행 상태
+    contractStatus: string;      // 운용 상태 코드
+    contractStatusName: string;
+    securityName: string;        // 증권사명
+    accountType: string;         // 계좌유형 코드 (IRP/ISA/PSA/BA)
+    accountNo: string;           // 계좌번호 (마스킹)
+    contractDate: string;        // YYYYMMDD
+    contractPeriod: number;      // 월 단위
+    contractEndDate: string;     // YYYYMMDD
+    minAmount: number;           // 최소 투자금액
+    feeType: string;             // 수수료 유형 코드
+    feeTypeName: string;         // "정률형" | "성과형"
+    feeTypePeriod: string;       // 수수료 출금 주기 코드
+    feeRate: number;             // 수수료율 (0.01 = 1%)
+    feeWithdrawalDate: string;   // YYYYMMDD
+    portfolioName: string;
+    portfolioType: string;       // "ETF" | "STOCK" | "ETC"
+    algoId: string;
+    portfolioNo: string;
+    withdrawalAccountNumber: string;   // 출금 계좌 (마스킹)
+    withdrawalAccountType: string;     // 출금 기관 코드
+    withdrawalAccountTypeName: string; // 출금 기관명
+    evaluation: {
+      navAmount: number;           // 평가금액
+      profitAmount: number;        // 수익금액 (음수 가능)
+      profitRate: number;          // 수익률 (소수, 0.05 = 5%)
+      investedPrincipal: number;   // 투자원금 ⚠️ 기존 principalAmount에서 변경
+      evalDttm: string;            // YYYYMMDDHHmmss (빈 문자열 가능)
+    };
+    orderStatus: OrderStatusItem | null;
+  };
 }
 ```
+
+### 기존 타입과 차이점
+
+| 항목 | 기존 (`QbContract.ContractInfo`) | 새 API 응답 |
+|------|----------------------------------|-------------|
+| 최상위 구조 | `customerName`, `customerId`, `contractInfo` | `betterId`, `customer`, `contract` |
+| evaluation 위치 | `contractInfo.evaluation` | `contract.evaluation` |
+| orderStatus 위치 | `contractInfo.orderStatus` | `contract.orderStatus` |
+| 투자원금 필드명 | `principalAmount` | **`investedPrincipal`** |
+| 계약기간 타입 | `string` ("12") | `number` (12) |
+| 수수료율 타입 | `string` ("0.012") | `number` (0.012) |
+| 계좌유형 | 코드 (IRP/ISA/PSA/BA) | 코드 동일 → `getAccountTypeName`으로 변환 |
+
+> ⚠️ **`principalAmount` → `investedPrincipal` 변경 주의**
+> 현재 `packages/shared-consts`의 `QbContract.Evaluation` 타입은 아직 `principalAmount`를 사용.
+> 계약목록 컴포넌트는 API 응답 전용 로컬 인터페이스를 사용하므로 직접적 충돌은 없으나,
+> 향후 shared-consts 타입 통합 시 이 변경 반영 필요.
+
+### `-` 표시 기준
+
+- 값이 `null` 또는 `undefined`일 때만 `-` (gray) 표시
+- `0`은 유효한 값 → 수익금액 `0원`, 수익률 `0.00%`로 정상 표시
+- 모든 계약 관련 화면(계약목록, 계약현황, Overview)에서 동일 기준 적용
 
 ### 테이블 컬럼 → 필드 매핑
 
 | 컬럼명 | 데이터 필드 |
 |--------|------------|
-| 고객명 | `customerName` |
-| 평가일시 | `evaluation.evalDttm` |
-| 계약상태 | `getQbContractStatus(contract.contractStatus, orderStatus)` |
-| 투자원금 | `evaluation.principalAmount` |
-| 평가금액 | `evaluation.navAmount` |
-| 수익금액 | `evaluation.profitAmount` |
-| 수익률 | `evaluation.profitRate` |
+| 고객명 | `customer.userName` |
+| 평가일시 | `contract.evaluation.evalDttm` |
+| 계약상태 | `getQbContractStatus(contract.contractStatus, contract.orderStatus)` |
+| 투자원금 | `contract.evaluation.investedPrincipal` |
+| 평가금액 | `contract.evaluation.navAmount` |
+| 수익금액 | `contract.evaluation.profitAmount` |
+| 수익률 | `contract.evaluation.profitRate` |
 | 증권사 | `contract.securityName` |
-| 계좌유형 | `contract.accountType` |
+| 계좌유형 | `getAccountTypeName(contract.accountType)` |
 | 계약유형 | `contract.contractTypeName` |
 | 포트폴리오 | `contract.portfolioName` |
 | 계약시작일 | `contract.contractDate` |
-| 계약만료일(남은일수) | `contract.contractEndDate` + D-day 계산 |
+| 계약만료일(남은일수) | `contract.contractEndDate` + `formatRemainingPeriod` |
 | 계약기간 | `contract.contractPeriod` |
 | 운용계좌 | `contract.actNo` |
 | 수수료 유형 | `contract.feeTypeName` |
@@ -123,21 +154,9 @@ interface ContractListItem {
 
 `getQbContractStatus` + 일임 오버라이드 (ContractItem.tsx 패턴 참고)
 
-| 코드 | 표시명 | 조건 |
-|------|--------|------|
-| 2200 | 입금 대기 중 | - |
-| 2202 | 승인 대기 중 | - |
-| 2210 | 승인 대기 중 | approveFlag=N, processFlag=N |
-| 2210 | 매매 대기 중 | approveFlag=Y, processFlag=N |
-| 2210 | 운용 중 | approveFlag=Y, processFlag=Y |
-| 2222 | 매매 진행 중 | - |
-| 2231 | 해지 수수료 계산 중 | - |
-| 2234 | 출금 대기 중 | - |
-| 2235 | 해지 대기 중 | - |
-
 > 일임 계약에서 '승인 대기 중' → '매매 대기 중'으로 오버라이드
 
-배지 색상: gray 톤 통일 (`color="default"`)
+배지 색상: 운용(2110/2210) → `green`, 그 외 → `yellow`
 
 ---
 
@@ -146,14 +165,11 @@ interface ContractListItem {
 - 헤더: `계약만료일(남은일수)`
 - 만료 전: `YYYY-MM-DD (NNN일)` — 남은 일수
 - 만료 후: `YYYY-MM-DD (만료)` — 해지 완료 전까지만 노출
-- 30일 이하: 일 단위 표시 (예: `1일`, `28일`), 빨강(`text-red-default`)
-- 30일 초과 ~ 1년 미만: 개월 단위 표시 (예: `2개월`, `11개월`), 회색(`text-gray-500`)
-- 1년 이상: 년+개월 표시 (예: `1년`, `1년 3개월`), 회색(`text-gray-500`)
-- 개월 계산은 `dayjs.diff(today, 'month')` 달력 기준 (완전한 월만 카운트, 미만은 버림)
+- 30일 이하: 일 단위, 빨강(`text-red-default`)
+- 30일 초과 ~ 1년 미만: 개월 단위, 회색(`text-gray-500`)
+- 1년 이상: 년+개월, 회색(`text-gray-500`)
+- 개월 계산: `dayjs.diff(today, 'month')` 달력 기준
 - 유틸 함수: `formatRemainingPeriod(endDate)` (`src/utils/formatters.ts`)
-
-> '만료' 표시 노출 시점: 계약 만료일 도래 후 해지 완료 처리 전까지만.
-> 해지 완료(2290) 시 목록에서 미노출. 해지 처리 소요: KBS D+4, SSI/KIS D+1~D+3 (`bw-is/해지.md` 참고)
 
 ---
 
@@ -161,29 +177,20 @@ interface ContractListItem {
 
 데이터가 없을 때 테이블 대신 `EmptyView` 컴포넌트 표시.
 
-- 21개 컬럼 테이블은 가로 스크롤 필요 → 테이블 내부 emptyView는 스크롤해야 보임
 - `data.length === 0`일 때 DataTable 자체를 렌더링하지 않고 EmptyView로 대체
-- EmptyView 참고: `src/components/ui/EmptyView`
 
 ---
 
 ## 금액 표시 규칙
 
-쿼터백 계약 관련 금액 데이터(투자원금, 평가금액, 수익금액)가 소숫점 포함돼서 내려오는 경우 **절상(Math.ceil)** 처리.
-
----
-
-## v2 (API 기능 추가 후)
-
-- 페이지네이션 (서버 사이드)
-- 검색 (고객명·계약번호·포트폴리오명)
-- 정렬 (서버 사이드)
+금액 데이터(투자원금, 평가금액, 수익금액)가 소숫점 포함 시 **절상(Math.ceil)** 처리.
 
 ---
 
 ## 변경 이력
 
-| 날짜 | 변경 내용 | 관련 파일 |
-|------|-----------|-----------|
-| 2026-04-13 | 최초 작성 | 전체 |
-| 2026-04-14 | 계약만료일 헤더/표시 변경, 빈 화면 처리 추가, 배지 gray 통일 반영 | CustomersContracts.tsx |
+| 날짜 | 변경 내용 |
+|------|-----------|
+| 2026-04-13 | 최초 작성 |
+| 2026-04-14 | 계약만료일 표시, 빈 화면 처리, 배지 색상 변경 |
+| 2026-04-14 | API 응답 스펙 적용 — 데이터 구조 전면 교체, `principalAmount` → `investedPrincipal` 변경 |
